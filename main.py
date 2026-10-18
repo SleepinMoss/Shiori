@@ -2,6 +2,7 @@ import os
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QScrollArea, QGroupBox, QPushButton, QDialog, QDialogButtonBox, QLineEdit, QFileDialog, QHBoxLayout, QInputDialog
 from backupMan import loadFile, createCategory, createFile
+from PyQt6.QtCore import Qt
 
 dir = os.path.expanduser("~/.local/share/shiori")
 
@@ -22,6 +23,13 @@ class MainWindow(QMainWindow):
         for category in directory:
             groupBox = QGroupBox()
             categoryLayout = QVBoxLayout()
+            scrollLayout = QScrollArea()
+            scrollLayout.setWidgetResizable(True)
+            scrollLayout.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            scrollLayout.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            
+            buttonsWidget = QWidget()
+            buttonsLayout = QHBoxLayout(buttonsWidget)
 
             header = QHBoxLayout()
             title = QLabel(category)
@@ -39,14 +47,20 @@ class MainWindow(QMainWindow):
             for backup in os.listdir(os.path.join(dir, category)):
                 if backup == "index.json" : continue
                 button = QPushButton(backup)
+                button.setMinimumWidth(180)
+                button.setMinimumHeight(120)
                 button.clicked.connect(
                     lambda checked, category=category, backup=backup:
                         loadFile(category, backup)
                 )
-                categoryLayout.addWidget(button)
-
+                buttonsLayout.addWidget(button)
+                
+            buttonsLayout.addStretch()
+            scrollLayout.setWidget(buttonsWidget)
+            categoryLayout.addWidget(scrollLayout)
             groupBox.setLayout(categoryLayout)
             self.mainLayout.addWidget(groupBox)
+            
         buttonAdd = QPushButton("Add Category")
         buttonAdd.clicked.connect(self.addCategory)
         self.mainLayout.addWidget(buttonAdd)
